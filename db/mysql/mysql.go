@@ -9,9 +9,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-var udp *sql.DB
-var lifestyle *sql.DB
-
 // GetConnStr used to build db connection string
 func GetConnStr(url, user, pass, dbName string, port int) string {
 	connStr := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", user, pass, url, port, dbName)
@@ -35,7 +32,7 @@ func FetchWithConn(conn *sql.DB, command string, rowHandel func(rowIndex int, ro
 	if err != nil {
 		return nil, err
 	}
-
+	defer rows.Close()
 	columns, err := rows.Columns()
 	if err != nil {
 		return nil, err
