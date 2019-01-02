@@ -9,9 +9,13 @@ import (
 	"strings"
 
 	"github.com/RichardKnop/machinery/v1/log"
-	restful "github.com/emicklei/go-restful"
 	"github.com/stretchr/testify/suite"
 )
+
+//HTTPServer used to represent http server
+type HTTPServer interface {
+	ServeHTTP(httpwriter http.ResponseWriter, httpRequest *http.Request)
+}
 
 // NewAPITest used to
 func NewAPITest(reqs []APITestRequest, assertFn func(*suite.Suite, APITest)) *APITest {
@@ -29,12 +33,12 @@ type APITest struct {
 }
 
 // Run used to
-func (ref *APITest) Run(s *suite.Suite, container *restful.Container) {
+func (ref *APITest) Run(s *suite.Suite, server HTTPServer) {
 	for _, req := range ref.Requests {
 		if req.PreReqFn != nil {
 			req.PreReqFn(*ref, req.Request)
 		}
-		ref.Responses = append(ref.Responses, RunRequest(s, container, req.Request))
+		ref.Responses = append(ref.Responses, RunRequest(s, server, req.Request))
 	}
 	ref.AssertionFn(s, *ref)
 }
@@ -76,9 +80,9 @@ func ReplaceRequestBody(req *http.Request, oldStr, newStr string) *http.Request 
 }
 
 // RunRequest used to test
-func RunRequest(s *suite.Suite, container *restful.Container, req *http.Request) APITestResponse {
+func RunRequest(s *suite.Suite, server HTTPServer, req *http.Request) APITestResponse {
 	resp := httptest.NewRecorder()
-	container.ServeHTTP(resp, req)
+	server.ServeHTTP(resp, req)
 	data, err := ioutil.ReadAll(resp.Body)
 	s.Nil(err, "Couldn't read response body for req: "+req.URL.String())
 	log.INFO.Printf("Response for %s %q: %d %s", req.Method, req.URL.String(), resp.Code, string(data))
