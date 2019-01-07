@@ -100,8 +100,45 @@ func TestFirst(t *testing.T) {
 
 }
 
+func TestFilter(t *testing.T) {
+
+	objArray := array.StringsToInterfaces(stringTestCases)
+
+	compare1 := func(a interface{}) bool {
+		if a == "nio" || a == "barry" {
+			return true
+		}
+		return false
+	}
+
+	result := array.Filter(objArray, compare1)
+	assertArrayEqual(t, result, []interface{}{"barry", "nio"})
+
+	b := make([]interface{}, len(pTestCases), len(pTestCases))
+	for i := range pTestCases {
+		b[i] = pTestCases[i]
+	}
+	compare3 := func(a interface{}) bool {
+		p := a.(*Person)
+		if p.Age == 31 {
+			return true
+		}
+		return false
+	}
+	result = array.Filter(b, compare3)
+	assertArrayEqual(t, result, []interface{}{pTestCases[1], pTestCases[3]})
+
+}
+
 func assertEqual(t *testing.T, actually interface{}, expected interface{}) {
 	if actually != expected {
 		t.Fatalf("Expected: %v ===> Actually: %v\n", expected, actually)
+	}
+}
+
+func assertArrayEqual(t *testing.T, actually []interface{}, expected []interface{}) {
+	length := len(actually)
+	for i := 0; i < length; i++ {
+		assertEqual(t, actually[i], expected[i])
 	}
 }
