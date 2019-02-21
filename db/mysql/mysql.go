@@ -3,6 +3,7 @@ package mysql
 import (
 	"database/sql"
 	"strings"
+	"time"
 
 	// used to import mysql driver
 
@@ -19,7 +20,7 @@ func GetConn(connStr string) (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	conn.SetConnMaxLifetime(time.Second * 10)
 	conn.SetMaxOpenConns(500)
 	conn.SetMaxIdleConns(100)
 	err = conn.Ping()
@@ -88,19 +89,20 @@ func FetchRawWithConn(conn *sql.DB, command string) ([][]sql.RawBytes, error) {
 	if err != nil {
 		return nil, err
 	}
+	columnsCount := len(columns)
 	// Make a slice for the values
-	values := make([]sql.RawBytes, len(columns))
-	scanArgs := make([]interface{}, len(values))
-	for i := range values {
-		scanArgs[i] = &values[i]
-	}
+	scanArgs := make([]interface{}, columnsCount)
 
 	// Fetch rows
 	rowIndex := 0
-
 	cache := make([][]sql.RawBytes, 0)
+
 	for rows.Next() {
 		// get RawBytes from data
+		values := make([]sql.RawBytes, columnsCount)
+		for i := range values {
+			scanArgs[i] = &values[i]
+		}
 		err = rows.Scan(scanArgs...)
 		if err != nil {
 			log.ERROR.Printf("get mysql columns met %s", err.Error())
