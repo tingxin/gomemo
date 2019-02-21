@@ -14,6 +14,12 @@ import (
 // DataHandler used process the raw data to target object
 type DataHandler func(rowIndex int, row []sql.RawBytes) (interface{}, error)
 
+// GenRow used to process the mysql raw data GenRow
+type GenRow struct {
+	Err  error
+	Data []sql.RawBytes
+}
+
 // GetConn used to generate a connection to datebase
 func GetConn(connStr string) (*sql.DB, error) {
 	conn, err := sql.Open("mysql", connStr)
@@ -116,6 +122,58 @@ func FetchRawWithConn(conn *sql.DB, command string) ([][]sql.RawBytes, error) {
 		return nil, err
 	}
 	return cache, nil
+}
+
+// FetchRawGenerator used to query data with a established connection
+func FetchRawGenerator(conn *sql.DB, command string) <-chan *GenRow {
+	req := make(chan *GenRow)
+	go fetchRawGen(conn, command, req)
+	return req
+}
+
+// fetchRawWithConn used to query data with a established connection
+func fetchRawGen(conn *sql.DB, command string, result chan<- *GenRow) {
+	// Execute the query
+	rows, err := conn.Query(command)
+	if err != nil {
+		result <- &GenRow{Err: err, Data: nil}
+		return
+	}
+	defer rows.Close()
+
+	columns, err := rows.Columns()
+	if err != nil {
+		result <- &GenRow{Err: err, Data: nil}
+		return
+	}
+	columnsCount := len(columns)
+	// Make a slice for the values
+	scanArgs := make([]interface{}, columnsCount)
+
+	// Fetch rows
+	rowIndex := 0
+
+	for rows.Next() {
+		// get RawBytes from data
+		values := make([]sql.RawBytes, columnsCount)
+		for i := range values {
+			scanArgs[i] = &values[i]
+		}
+		err = rows.Scan(scanArgs...)
+		if err != nil {
+			log.ERROR.Printf("get mysql columns met %s", err.Error())
+			continue
+		}
+
+		rowIndex++
+		result <- &GenRow{Err: nil, Data: values}
+	}
+	if err = rows.Err(); err != nil {
+		result <- &GenRow{Err: err, Data: nil}
+		return
+	}
+	close(result)
+	return
 }
 
 // ExecuteWithConn used to excuete sql command such as insert, delete
