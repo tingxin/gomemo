@@ -57,6 +57,16 @@ func ToInt64FromObj(raw interface{}) int64 {
 	return i
 }
 
+// ToIntFromObj used to convert  bytes to int
+func ToIntFromObj(raw interface{}) int {
+	t := raw.(sql.RawBytes)
+	i, err := strconv.Atoi(string(t))
+	if err != nil {
+		return 0
+	}
+	return i
+}
+
 // ToInt64FromBytes used to convert  bytes to int
 func ToInt64FromBytes(raw []byte) int64 {
 	i, err := strconv.ParseInt(string(raw), 10, 64)
