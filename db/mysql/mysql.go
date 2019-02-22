@@ -40,10 +40,10 @@ func GetConn(connStr string) (*sql.DB, error) {
 func FetchWithConn(conn *sql.DB, command string, rowHandel func(rowIndex int, row []sql.RawBytes) (interface{}, error)) ([]interface{}, error) {
 	// Execute the query
 	rows, err := conn.Query(command)
-	defer rows.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	columns, err := rows.Columns()
 	if err != nil {
