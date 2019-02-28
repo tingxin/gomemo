@@ -26,9 +26,9 @@ func GetConn(connStr string) (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	conn.SetConnMaxLifetime(time.Second * 10)
+	conn.SetConnMaxLifetime(time.Minute * 10)
 	conn.SetMaxOpenConns(500)
-	conn.SetMaxIdleConns(100)
+	conn.SetMaxIdleConns(10)
 	err = conn.Ping()
 	if err != nil {
 		return nil, err
