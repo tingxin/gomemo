@@ -54,6 +54,7 @@ func FetchWithConn(conn *sql.DB, command string, rowHandel func(rowIndex int, ro
 		if err != nil && i == retryTimes-1 {
 			return nil, err
 		}
+		log.WARNING.Printf("Connect mysql failed, re-conncting %d ...", i+1)
 		time.Sleep(time.Millisecond * 10)
 	}
 	defer rows.Close()
