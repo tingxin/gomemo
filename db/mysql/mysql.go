@@ -11,6 +11,10 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+var (
+	retryTimes = 3
+)
+
 // DataHandler used process the raw data to target object
 type DataHandler func(rowIndex int, row []sql.RawBytes) (interface{}, error)
 
@@ -40,12 +44,19 @@ func GetConn(connStr string) (*sql.DB, error) {
 // FetchWithConn used to query data with a established connection
 func FetchWithConn(conn *sql.DB, command string, rowHandel func(rowIndex int, row []sql.RawBytes) (interface{}, error)) ([]interface{}, error) {
 	// Execute the query
-	rows, err := conn.Query(command)
-	if err != nil {
-		return nil, err
+	var rows *sql.Rows
+	for i := 0; i < retryTimes; i++ {
+		_rows, err := conn.Query(command)
+		if err == nil {
+			rows = _rows
+			break
+		}
+		if err != nil && i == retryTimes-1 {
+			return nil, err
+		}
+		time.Sleep(time.Millisecond * 10)
 	}
 	defer rows.Close()
-
 	columns, err := rows.Columns()
 	if err != nil {
 		return nil, err
