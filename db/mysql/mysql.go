@@ -51,7 +51,6 @@ func FetchWithConn(conn *sql.DB, command string, rowHandel func(rowIndex int, ro
 			rows = _rows
 			break
 		}
-		_rows.Close()
 		if err != nil && i == retryTimes-1 {
 			return nil, err
 		}
@@ -106,7 +105,6 @@ func FetchRawWithConn(conn *sql.DB, command string) ([][]sql.RawBytes, error) {
 			rows = _rows
 			break
 		}
-		_rows.Close()
 		if err != nil && i == retryTimes-1 {
 			return nil, err
 		}
