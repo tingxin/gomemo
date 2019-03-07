@@ -51,11 +51,13 @@ func FetchWithConn(conn *sql.DB, command string, rowHandel func(rowIndex int, ro
 			rows = _rows
 			break
 		}
-		if err != nil && i == retryTimes-1 {
+		if i == retryTimes-1 {
+			log.ERROR.Printf("Connect mysql failed, re-conncting %d ...", retryTimes)
 			return nil, err
 		}
 		log.WARNING.Printf("Connect mysql failed, re-conncting %d ...", i+1)
-		time.Sleep(time.Millisecond * 10)
+		sleepTime := time.Duration(100 * (i + 1))
+		time.Sleep(time.Millisecond * sleepTime)
 	}
 	defer rows.Close()
 	columns, err := rows.Columns()
@@ -105,11 +107,13 @@ func FetchRawWithConn(conn *sql.DB, command string) ([][]sql.RawBytes, error) {
 			rows = _rows
 			break
 		}
-		if err != nil && i == retryTimes-1 {
+		if i == retryTimes-1 {
+			log.ERROR.Printf("Connect mysql failed, re-conncting %d ...", retryTimes)
 			return nil, err
 		}
 		log.WARNING.Printf("Connect mysql failed, re-conncting %d ...", i+1)
-		time.Sleep(time.Millisecond * 10)
+		sleepTime := time.Duration(100 * (i + 1))
+		time.Sleep(time.Millisecond * sleepTime)
 	}
 	defer rows.Close()
 
@@ -156,10 +160,21 @@ func FetchRawGenerator(conn *sql.DB, command string) <-chan *GenRow {
 // fetchRawWithConn used to query data with a established connection
 func fetchRawGen(conn *sql.DB, command string, result chan<- *GenRow) {
 	// Execute the query
-	rows, err := conn.Query(command)
-	if err != nil {
-		result <- &GenRow{Err: err, Data: nil}
-		return
+	var rows *sql.Rows
+	for i := 0; i < retryTimes; i++ {
+		_rows, err := conn.Query(command)
+		if err == nil {
+			rows = _rows
+			break
+		}
+		if i == retryTimes-1 {
+			log.ERROR.Printf("Connect mysql failed, re-conncting %d ...", retryTimes)
+			result <- &GenRow{Err: err, Data: nil}
+			return
+		}
+		log.WARNING.Printf("Connect mysql failed, re-conncting %d ...", i+1)
+		sleepTime := time.Duration(100 * (i + 1))
+		time.Sleep(time.Millisecond * sleepTime)
 	}
 	defer rows.Close()
 

@@ -132,13 +132,6 @@ func PushBulk(conn *ConnInfo, index, docType string, docIDs []string, docs []int
 		return fmt.Errorf("Error: failed to insert docs %v", docIDs)
 	}
 
-	succ := bulkResponse.Succeeded()
-	for _, item := range succ {
-		if item.Result == "updated" {
-			fmt.Printf("updated %s\n", item.Id)
-		}
-	}
-
 	fail := bulkResponse.Failed()
 	for _, item := range fail {
 		return fmt.Errorf("%s", item.Error.Reason)
