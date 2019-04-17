@@ -97,7 +97,7 @@ func FetchWithConn(conn *sql.DB, command string, rowHandel func(rowIndex int, ro
 	return cache, nil
 }
 
-// FetchRawWithConn used to query data with a established connection
+// FetchRawWithConn (NOT SUGGEST TO USE DUE TO MEMORY BUG)used to query data with a established connection
 func FetchRawWithConn(conn *sql.DB, command string) ([][]sql.RawBytes, error) {
 	// Execute the query
 	var rows *sql.Rows
