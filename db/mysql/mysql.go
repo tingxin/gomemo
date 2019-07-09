@@ -108,10 +108,10 @@ func FetchRawWithConn(conn *sql.DB, command string) ([][]sql.RawBytes, error) {
 			break
 		}
 		if i == retryTimes-1 {
-			log.ERROR.Printf("Connect mysql failed, re-conncting %d ...", retryTimes)
+			log.ERROR.Printf("Failed to query in mysql due to %v, retry ...", err, retryTimes)
 			return nil, err
 		}
-		log.WARNING.Printf("Connect mysql failed, re-conncting %d ...", i+1)
+		log.WARNING.Printf("Failed to query in mysql due to \n %v\n, retry ...", err, i+1)
 		sleepTime := time.Duration(100 * (i + 1))
 		time.Sleep(time.Millisecond * sleepTime)
 	}
@@ -168,11 +168,11 @@ func fetchRawGen(conn *sql.DB, command string, result chan<- *GenRow) {
 			break
 		}
 		if i == retryTimes-1 {
-			log.ERROR.Printf("Connect mysql failed, re-conncting %d ...", retryTimes)
+			log.ERROR.Printf("Failed to query in mysql due to %v, retry ...", err, retryTimes)
 			result <- &GenRow{Err: err, Data: nil}
 			return
 		}
-		log.WARNING.Printf("Connect mysql failed, re-conncting %d ...", i+1)
+		log.WARNING.Printf("Failed to query in mysql due to \n %v\n, retry ...", err, i+1)
 		sleepTime := time.Duration(100 * (i + 1))
 		time.Sleep(time.Millisecond * sleepTime)
 	}
