@@ -52,10 +52,10 @@ func FetchWithConn(conn *sql.DB, command string, rowHandel func(rowIndex int, ro
 			break
 		}
 		if i == retryTimes-1 {
-			log.ERROR.Printf("Connect mysql failed, re-conncting %d ...", retryTimes)
+			log.ERROR.Printf("Failed to query in mysql due to %v, retry ...", err, retryTimes)
 			return nil, err
 		}
-		log.WARNING.Printf("Connect mysql failed, re-conncting %d ...", i+1)
+		log.WARNING.Printf("Failed to query in mysql due to \n %v\n, retry ...", err, i+1)
 		sleepTime := time.Duration(100 * (i + 1))
 		time.Sleep(time.Millisecond * sleepTime)
 	}
