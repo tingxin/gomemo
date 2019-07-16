@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"database/sql"
+	"fmt"
 	"strings"
 	"time"
 
@@ -51,7 +52,8 @@ func FetchWithConn(conn *sql.DB, command string, rowHandel func(rowIndex int, ro
 			rows = _rows
 			break
 		}
-		if i == retryTimes-1 {
+		errStr := fmt.Sprintf("%v", err)
+		if i == retryTimes-1 || strings.Contains(errStr, "in your SQL syntax") {
 			log.ERROR.Printf("Failed to query in mysql due to %v, retry ...", err, retryTimes)
 			return nil, err
 		}
@@ -107,7 +109,8 @@ func FetchRawWithConn(conn *sql.DB, command string) ([][]sql.RawBytes, error) {
 			rows = _rows
 			break
 		}
-		if i == retryTimes-1 {
+		errStr := fmt.Sprintf("%v", err)
+		if i == retryTimes-1 || strings.Contains(errStr, "in your SQL syntax") {
 			log.ERROR.Printf("Failed to query in mysql due to %v, retry ...", err, retryTimes)
 			return nil, err
 		}
@@ -167,7 +170,8 @@ func fetchRawGen(conn *sql.DB, command string, result chan<- *GenRow) {
 			rows = _rows
 			break
 		}
-		if i == retryTimes-1 {
+		errStr := fmt.Sprintf("%v", err)
+		if i == retryTimes-1 || strings.Contains(errStr, "in your SQL syntax") {
 			log.ERROR.Printf("Failed to query in mysql due to %v, retry ...", err, retryTimes)
 			result <- &GenRow{Err: err, Data: nil}
 			return
