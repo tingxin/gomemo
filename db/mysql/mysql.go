@@ -88,7 +88,7 @@ func FetchWithConn(conn *sql.DB, command string, rowHandel func(rowIndex int, ro
 
 		obj, handelErr := rowHandel(rowIndex, values)
 		if handelErr != nil {
-			panic(handelErr)
+			continue
 		}
 		rowIndex++
 		cache = append(cache, obj)
