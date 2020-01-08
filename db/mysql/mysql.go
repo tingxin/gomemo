@@ -8,8 +8,8 @@ import (
 
 	// used to import mysql driver
 
-	"github.com/RichardKnop/machinery/v1/log"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/tingxin/go-utility/log"
 )
 
 var (
@@ -54,10 +54,10 @@ func FetchWithConn(conn *sql.DB, command string, rowHandel func(rowIndex int, ro
 		}
 		errStr := fmt.Sprintf("%v", err)
 		if i == retryTimes-1 || strings.Contains(errStr, "in your SQL syntax") {
-			log.ERROR.Printf("Failed to query in mysql due to %v, retry %d...", err, retryTimes)
+			log.ERROR.Printf("Failed to query \n%s\n in mysql due to\n %v, retry %d...", command, err, retryTimes)
 			return nil, err
 		}
-		log.WARNING.Printf("Failed to query in mysql due to \n %v\n, retry %d...", err, i+1)
+		log.WARNING.Printf("Failed to query \n%s\n in mysql due to \n %v\n, retry %d...", command, err, i+1)
 		sleepTime := time.Duration(100 * (i + 1))
 		time.Sleep(time.Millisecond * sleepTime)
 	}
@@ -111,10 +111,10 @@ func FetchRawWithConn(conn *sql.DB, command string) ([][]sql.RawBytes, error) {
 		}
 		errStr := fmt.Sprintf("%v", err)
 		if i == retryTimes-1 || strings.Contains(errStr, "in your SQL syntax") {
-			log.ERROR.Printf("Failed to query in mysql due to %v, retry %d...", err, retryTimes)
+			log.ERROR.Printf("Failed to query \n%s\n in mysql due to\n %v, retry %d...", command, err, retryTimes)
 			return nil, err
 		}
-		log.WARNING.Printf("Failed to query in mysql due to \n %v\n, retry %d...", err, i+1)
+		log.WARNING.Printf("Failed to query \n%s\n in mysql due to \n %v\n, retry %d...", command, err, i+1)
 		sleepTime := time.Duration(100 * (i + 1))
 		time.Sleep(time.Millisecond * sleepTime)
 	}
@@ -172,11 +172,11 @@ func fetchRawGen(conn *sql.DB, command string, result chan<- *GenRow) {
 		}
 		errStr := fmt.Sprintf("%v", err)
 		if i == retryTimes-1 || strings.Contains(errStr, "in your SQL syntax") {
-			log.ERROR.Printf("Failed to query in mysql due to %v, retry %d...", err, retryTimes)
+			log.ERROR.Printf("Failed to query \n%s\n in mysql due to\n %v, retry %d...", command, err, retryTimes)
 			result <- &GenRow{Err: err, Data: nil}
 			return
 		}
-		log.WARNING.Printf("Failed to query in mysql due to \n %v\n, retry %d...", err, i+1)
+		log.WARNING.Printf("Failed to query \n%s\n in mysql due to \n %v\n, retry %d...", command, err, i+1)
 		sleepTime := time.Duration(100 * (i + 1))
 		time.Sleep(time.Millisecond * sleepTime)
 	}
@@ -188,13 +188,15 @@ func fetchRawGen(conn *sql.DB, command string, result chan<- *GenRow) {
 		return
 	}
 	columnsCount := len(columns)
-	// Make a slice for the values
-	scanArgs := make([]interface{}, columnsCount)
 
 	// Fetch rows
 	rowIndex := 0
 
+	// Make a slice for the values
+	scanArgs := make([]interface{}, columnsCount)
+
 	for rows.Next() {
+
 		// get RawBytes from data
 		values := make([]sql.RawBytes, columnsCount)
 		for i := range values {
@@ -207,7 +209,9 @@ func fetchRawGen(conn *sql.DB, command string, result chan<- *GenRow) {
 		}
 
 		rowIndex++
-		result <- &GenRow{Err: nil, Data: values}
+		output := make([]sql.RawBytes, columnsCount)
+		copy(output, values)
+		result <- &GenRow{Err: nil, Data: output}
 	}
 	if err = rows.Err(); err != nil {
 		result <- &GenRow{Err: err, Data: nil}

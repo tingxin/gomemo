@@ -2,12 +2,12 @@ package es
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"time"
 
-	"git.nevint.com/user_actions/common"
-	"github.com/RichardKnop/machinery/v1/log"
+	"github.com/tingxin/go-utility/log"
 	elastic "gopkg.in/olivere/elastic.v5"
 )
 
@@ -24,6 +24,12 @@ type ConnInfo struct {
 	user   string
 	pass   string
 }
+
+// BuildStoreHandler used express the function type for build store item
+type BuildStoreHandler func(i interface{}) ([]string, []interface{})
+
+// DataTupleHandler used process the raw data to target object
+type DataTupleHandler func(rowIndex int, row []sql.RawBytes) ([]interface{}, error)
 
 // NewConnInfo used create ConnInfo
 func NewConnInfo(url, user, pass string) *ConnInfo {
@@ -140,7 +146,7 @@ func PushBulk(conn *ConnInfo, index, docType string, docIDs []string, docs []int
 }
 
 // PushBulkPro used to push data by PushBulk
-func PushBulkPro(conn *ConnInfo, index, doc string, input []interface{}, converter common.BuildStoreHandler) (successCount int, err error) {
+func PushBulkPro(conn *ConnInfo, index, doc string, input []interface{}, converter BuildStoreHandler) (successCount int, err error) {
 	bulkCache := make([]interface{}, bulkCount, bulkCount)
 	bulkKeyCache := make([]string, bulkCount, bulkCount)
 	var cursor int
