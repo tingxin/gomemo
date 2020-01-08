@@ -2,13 +2,14 @@ package mysql
 
 import (
 	"database/sql"
+	"fmt"
 	"strings"
 	"time"
 
 	// used to import mysql driver
 
-	"github.com/RichardKnop/machinery/v1/log"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/tingxin/go-utility/log"
 )
 
 var (
@@ -51,11 +52,12 @@ func FetchWithConn(conn *sql.DB, command string, rowHandel func(rowIndex int, ro
 			rows = _rows
 			break
 		}
-		if i == retryTimes-1 {
-			log.ERROR.Printf("Connect mysql failed, re-conncting %d ...", retryTimes)
+		errStr := fmt.Sprintf("%v", err)
+		if i == retryTimes-1 || strings.Contains(errStr, "in your SQL syntax") {
+			log.ERROR.Printf("Failed to query \n%s\n in mysql due to\n %v, retry %d...", command, err, retryTimes)
 			return nil, err
 		}
-		log.WARNING.Printf("Connect mysql failed, re-conncting %d ...", i+1)
+		log.WARNING.Printf("Failed to query \n%s\n in mysql due to \n %v\n, retry %d...", command, err, i+1)
 		sleepTime := time.Duration(100 * (i + 1))
 		time.Sleep(time.Millisecond * sleepTime)
 	}
@@ -86,7 +88,7 @@ func FetchWithConn(conn *sql.DB, command string, rowHandel func(rowIndex int, ro
 
 		obj, handelErr := rowHandel(rowIndex, values)
 		if handelErr != nil {
-			panic(handelErr)
+			continue
 		}
 		rowIndex++
 		cache = append(cache, obj)
@@ -97,7 +99,7 @@ func FetchWithConn(conn *sql.DB, command string, rowHandel func(rowIndex int, ro
 	return cache, nil
 }
 
-// FetchRawWithConn used to query data with a established connection
+// FetchRawWithConn (NOT SUGGEST TO USE DUE TO MEMORY BUG)used to query data with a established connection
 func FetchRawWithConn(conn *sql.DB, command string) ([][]sql.RawBytes, error) {
 	// Execute the query
 	var rows *sql.Rows
@@ -107,11 +109,12 @@ func FetchRawWithConn(conn *sql.DB, command string) ([][]sql.RawBytes, error) {
 			rows = _rows
 			break
 		}
-		if i == retryTimes-1 {
-			log.ERROR.Printf("Connect mysql failed, re-conncting %d ...", retryTimes)
+		errStr := fmt.Sprintf("%v", err)
+		if i == retryTimes-1 || strings.Contains(errStr, "in your SQL syntax") {
+			log.ERROR.Printf("Failed to query \n%s\n in mysql due to\n %v, retry %d...", command, err, retryTimes)
 			return nil, err
 		}
-		log.WARNING.Printf("Connect mysql failed, re-conncting %d ...", i+1)
+		log.WARNING.Printf("Failed to query \n%s\n in mysql due to \n %v\n, retry %d...", command, err, i+1)
 		sleepTime := time.Duration(100 * (i + 1))
 		time.Sleep(time.Millisecond * sleepTime)
 	}
@@ -167,12 +170,13 @@ func fetchRawGen(conn *sql.DB, command string, result chan<- *GenRow) {
 			rows = _rows
 			break
 		}
-		if i == retryTimes-1 {
-			log.ERROR.Printf("Connect mysql failed, re-conncting %d ...", retryTimes)
+		errStr := fmt.Sprintf("%v", err)
+		if i == retryTimes-1 || strings.Contains(errStr, "in your SQL syntax") {
+			log.ERROR.Printf("Failed to query \n%s\n in mysql due to\n %v, retry %d...", command, err, retryTimes)
 			result <- &GenRow{Err: err, Data: nil}
 			return
 		}
-		log.WARNING.Printf("Connect mysql failed, re-conncting %d ...", i+1)
+		log.WARNING.Printf("Failed to query \n%s\n in mysql due to \n %v\n, retry %d...", command, err, i+1)
 		sleepTime := time.Duration(100 * (i + 1))
 		time.Sleep(time.Millisecond * sleepTime)
 	}
@@ -184,13 +188,15 @@ func fetchRawGen(conn *sql.DB, command string, result chan<- *GenRow) {
 		return
 	}
 	columnsCount := len(columns)
-	// Make a slice for the values
-	scanArgs := make([]interface{}, columnsCount)
 
 	// Fetch rows
 	rowIndex := 0
 
+	// Make a slice for the values
+	scanArgs := make([]interface{}, columnsCount)
+
 	for rows.Next() {
+
 		// get RawBytes from data
 		values := make([]sql.RawBytes, columnsCount)
 		for i := range values {
@@ -203,7 +209,9 @@ func fetchRawGen(conn *sql.DB, command string, result chan<- *GenRow) {
 		}
 
 		rowIndex++
-		result <- &GenRow{Err: nil, Data: values}
+		output := make([]sql.RawBytes, columnsCount)
+		copy(output, values)
+		result <- &GenRow{Err: nil, Data: output}
 	}
 	if err = rows.Err(); err != nil {
 		result <- &GenRow{Err: err, Data: nil}

@@ -67,6 +67,11 @@ func ToIntFromObj(raw interface{}) int {
 	return i
 }
 
+// ToStrFromBytes used to convert  bytes to string
+func ToStrFromBytes(raw []byte) string {
+	return string(raw)
+}
+
 // ToInt64FromBytes used to convert  bytes to int
 func ToInt64FromBytes(raw []byte) int64 {
 	i, err := strconv.ParseInt(string(raw), 10, 64)
@@ -74,6 +79,12 @@ func ToInt64FromBytes(raw []byte) int64 {
 		return 0
 	}
 	return i
+}
+
+// ToFloat32FromBytes used to convert  bytes to int
+func ToFloat32FromBytes(raw []byte) float32 {
+	i := ToFloat64FromBytes(raw)
+	return float32(i)
 }
 
 // ToFloat64FromBytes used to convert  bytes to int
