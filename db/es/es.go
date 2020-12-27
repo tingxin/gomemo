@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 
-	"gomemo/log"
+	"github.com/tingxin/gomemo/log"
 
 	elastic "gopkg.in/olivere/elastic.v5"
 )

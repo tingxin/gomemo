@@ -3,9 +3,10 @@ package mysql
 import (
 	"database/sql"
 	"fmt"
-	"gomemo/log"
 	"strings"
 	"time"
+
+	"github.com/tingxin/gomemo/log"
 
 	// used to import mysql driver
 	_ "github.com/go-sql-driver/mysql"

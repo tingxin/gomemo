@@ -1,7 +1,7 @@
 package log
 
 import (
-	"gomemo/log/logging"
+	"github.com/tingxin/gomemo/log/logging"
 )
 
 var (
