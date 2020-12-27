@@ -3,13 +3,12 @@ package mysql
 import (
 	"database/sql"
 	"fmt"
+	"gomemo/log"
 	"strings"
 	"time"
 
 	// used to import mysql driver
-
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/tingxin/go-utility/log"
 )
 
 var (

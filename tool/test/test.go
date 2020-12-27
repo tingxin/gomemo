@@ -3,12 +3,12 @@ package test
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 
-	"github.com/RichardKnop/machinery/v1/log"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -85,7 +85,7 @@ func RunRequest(s *suite.Suite, server HTTPServer, req *http.Request) APITestRes
 	server.ServeHTTP(resp, req)
 	data, err := ioutil.ReadAll(resp.Body)
 	s.Nil(err, "Couldn't read response body for req: "+req.URL.String())
-	log.INFO.Printf("Response for %s %q: %d %s", req.Method, req.URL.String(), resp.Code, string(data))
+	fmt.Printf("Response for %s %q: %d %s", req.Method, req.URL.String(), resp.Code, string(data))
 	testResponse := APITestResponse{Code: resp.Code, BodyText: string(data), HeaderMap: resp.HeaderMap}
 	switch resp.HeaderMap.Get("Content-Type") {
 	case "application/json":

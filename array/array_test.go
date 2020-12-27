@@ -1,9 +1,7 @@
-package test
+package array
 
 import (
 	"testing"
-
-	"github.com/tingxin/go-utility/array"
 )
 
 type Person struct {
@@ -40,27 +38,27 @@ func init() {
 
 func TestContain(t *testing.T) {
 
-	objArray := array.StringsToInterfaces(stringTestCases)
+	objArray := StringsToInterfaces(stringTestCases)
 
-	contain := array.Contain(objArray, "barry")
+	contain := Contain(objArray, "barry")
 	assertEqual(t, contain, true)
 
-	contain = array.Contain(objArray, "xxxx")
+	contain = Contain(objArray, "xxxx")
 	assertEqual(t, contain, false)
 
-	objArray = array.IntsToInterfaces(intTestCases)
+	objArray = IntsToInterfaces(intTestCases)
 
-	contain = array.Contain(objArray, 199)
+	contain = Contain(objArray, 199)
 	assertEqual(t, contain, true)
 
-	contain = array.Contain(objArray, 1212)
-	assertEqual(t, contain, true)
+	contain = Contain(objArray, 1212)
+	assertEqual(t, contain, false)
 
 }
 
 func TestFirst(t *testing.T) {
 
-	objArray := array.StringsToInterfaces(stringTestCases)
+	objArray := StringsToInterfaces(stringTestCases)
 
 	compare1 := func(a interface{}) bool {
 		if a == "nio" {
@@ -69,10 +67,10 @@ func TestFirst(t *testing.T) {
 		return false
 	}
 
-	first := array.First(objArray, compare1)
+	first := First(objArray, compare1)
 	assertEqual(t, first, "nio")
 
-	objArray = array.IntsToInterfaces(intTestCases)
+	objArray = IntsToInterfaces(intTestCases)
 
 	compare2 := func(a interface{}) bool {
 		if a == 3234 {
@@ -81,7 +79,7 @@ func TestFirst(t *testing.T) {
 		return false
 	}
 
-	first = array.First(objArray, compare2)
+	first = First(objArray, compare2)
 	assertEqual(t, first, 3234)
 
 	b := make([]interface{}, len(pTestCases), len(pTestCases))
@@ -95,14 +93,14 @@ func TestFirst(t *testing.T) {
 		}
 		return false
 	}
-	first = array.First(b, compare3)
+	first = First(b, compare3)
 	assertEqual(t, first, pTestCases[1])
 
 }
 
 func TestFilter(t *testing.T) {
 
-	objArray := array.StringsToInterfaces(stringTestCases)
+	objArray := StringsToInterfaces(stringTestCases)
 
 	compare1 := func(a interface{}) bool {
 		if a == "nio" || a == "barry" {
@@ -111,7 +109,7 @@ func TestFilter(t *testing.T) {
 		return false
 	}
 
-	result := array.Filter(objArray, compare1)
+	result := Filter(objArray, compare1)
 	assertArrayEqual(t, result, []interface{}{"barry", "nio"})
 
 	b := make([]interface{}, len(pTestCases), len(pTestCases))
@@ -125,7 +123,7 @@ func TestFilter(t *testing.T) {
 		}
 		return false
 	}
-	result = array.Filter(b, compare3)
+	result = Filter(b, compare3)
 	assertArrayEqual(t, result, []interface{}{pTestCases[1], pTestCases[3]})
 
 }
