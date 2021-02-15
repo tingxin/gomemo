@@ -19,7 +19,7 @@ func init() {
 	stringTestCases = make([]string, 0)
 	stringTestCases = append(stringTestCases, "hello")
 	stringTestCases = append(stringTestCases, "barry")
-	stringTestCases = append(stringTestCases, "nio")
+	stringTestCases = append(stringTestCases, "monkey")
 	stringTestCases = append(stringTestCases, "it")
 
 	intTestCases = make([]int, 0)
@@ -61,14 +61,14 @@ func TestFirst(t *testing.T) {
 	objArray := StringsToInterfaces(stringTestCases)
 
 	compare1 := func(a interface{}) bool {
-		if a == "nio" {
+		if a == "monkey" {
 			return true
 		}
 		return false
 	}
 
 	first := First(objArray, compare1)
-	assertEqual(t, first, "nio")
+	assertEqual(t, first, "monkey")
 
 	objArray = IntsToInterfaces(intTestCases)
 
@@ -103,14 +103,14 @@ func TestFilter(t *testing.T) {
 	objArray := StringsToInterfaces(stringTestCases)
 
 	compare1 := func(a interface{}) bool {
-		if a == "nio" || a == "barry" {
+		if a == "monkey" || a == "barry" {
 			return true
 		}
 		return false
 	}
 
 	result := Filter(objArray, compare1)
-	assertArrayEqual(t, result, []interface{}{"barry", "nio"})
+	assertArrayEqual(t, result, []interface{}{"barry", "monkey"})
 
 	b := make([]interface{}, len(pTestCases), len(pTestCases))
 	for i := range pTestCases {
