@@ -23,11 +23,6 @@ func FetchWithConn(conn *sql.DB, command string, rowHandel func(rowIndex int, ro
 	if err != nil {
 		return nil, err
 	}
-	defer func() {
-		err := rows.Close()
-		panic(err)
-	}()
-
 	columns, err := rows.Columns()
 	if err != nil {
 		return nil, err
@@ -120,7 +115,6 @@ func fetchRawGen(conn *sql.DB, command string, result chan<- *GenRow) {
 		result <- &GenRow{Err: err, Data: nil}
 		return
 	}
-
 	columns, err := rows.Columns()
 	if err != nil {
 		result <- &GenRow{Err: err, Data: nil}
